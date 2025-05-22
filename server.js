@@ -9,6 +9,7 @@ const assignedRoutes = require('./routes/assignedproject');
 const publicRoutes = require('./routes/public');
 const dashboardRoutes = require('./routes/dash');
 const reportsRoutes = require('./routes/report');
+const attendanceRoutes = require('./routes/attendance');
 const app = express();
 const port = 3000;
 
@@ -29,6 +30,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/tas', tasRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Start Server
 app.listen(port, () => {

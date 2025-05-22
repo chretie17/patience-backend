@@ -67,7 +67,7 @@ exports.getUserPerformance = (req, res) => {
             ) AS completion_rate
         FROM users u
         LEFT JOIN tasks t ON t.assigned_user = u.id
-        WHERE u.role NOT IN ('Engineer', 'Admin')
+        WHERE u.role NOT IN ('supervisor', 'Admin')
     `;
 
     if (start_date && end_date) {

@@ -212,8 +212,8 @@ exports.getUserById = (req, res) => {
     });
 };
 exports.getUsersByRole = (req, res) => {
-  // MySQL query to get users with role 'member'
-  const query = 'SELECT id AS user_id, username FROM users WHERE role = "member"';
+  // MySQL query to get users with role 'technician'
+  const query = 'SELECT id AS user_id, username FROM users WHERE role = "technician"';
 
   db.query(query, (err, results) => {
     if (err) {

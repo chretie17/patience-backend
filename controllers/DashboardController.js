@@ -106,3 +106,45 @@ exports.getTotalBudget = async (req, res) => {
         res.status(500).json({ message: "Error fetching budget data" });
     }
 };
+
+// 📌 **7. Get Today's Attendance Statistics**
+exports.getTodayAttendance = async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        const query = `
+            SELECT 
+                COUNT(*) AS total_checked_in,
+                COUNT(CASE WHEN check_out IS NOT NULL THEN 1 END) AS total_checked_out,
+                COUNT(CASE WHEN check_out IS NULL THEN 1 END) AS currently_active
+            FROM attendance 
+            WHERE date = ?;
+        `;
+        
+        const result = await executeQuery(query, [today]);
+        res.status(200).json(result[0]);
+    } catch (error) {
+        console.error("Error fetching today's attendance:", error);
+        res.status(500).json({ message: "Error fetching attendance data" });
+    }
+};
+exports.getTodayAttendance = async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        
+        const query = `
+            SELECT 
+                COUNT(*) AS total_checked_in,
+                COUNT(CASE WHEN check_out IS NOT NULL THEN 1 END) AS total_checked_out,
+                COUNT(CASE WHEN check_out IS NULL THEN 1 END) AS currently_active
+            FROM attendance 
+            WHERE DATE(date) = ?;
+        `;
+        
+        const result = await executeQuery(query, [today]);
+        res.status(200).json(result[0]);
+    } catch (error) {
+        console.error("Error fetching today's attendance:", error);
+        res.status(500).json({ message: "Error fetching attendance data" });
+    }
+};

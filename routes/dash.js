@@ -9,5 +9,6 @@ router.get('/tasks/status', dashboardController.getTotalTasksByStatus);
 router.get('/tasks/recent', dashboardController.getRecentTasks);
 router.get('/users/count', dashboardController.getTotalUsers);
 router.get('/projects/budget', dashboardController.getTotalBudget);
+router.get('/today-attendance', dashboardController.getTodayAttendance);
 
 module.exports = router;

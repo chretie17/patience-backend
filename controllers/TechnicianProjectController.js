@@ -19,8 +19,8 @@ const executeQuery = (query, values) => {
   });
 };
 
-// Get the project assigned to a member, including images
-// Get the project assigned to a member, including images
+// Get the project assigned to a technician, including images
+// Get the project assigned to a technician, including images
 exports.getAssignedProject = async (req, res) => {
     const { userId } = req.params;
   

@@ -1,14 +1,14 @@
 // userProjectController.js
 const db = require('../db');  // Assuming you've set up MySQL connection
 
-// Get users with role 'member'
+// Get users with role 'technician'
 exports.getUsers = (req, res) => {
-    console.log("Fetching users with role 'member'...");
+    console.log("Fetching users with role 'technician'...");
 
     const query = `
       SELECT id, username 
       FROM users 
-      WHERE role = 'member'
+      WHERE role = 'technician'
     `;
 
     db.query(query, (err, result) => {
@@ -18,7 +18,7 @@ exports.getUsers = (req, res) => {
         }
 
         console.log('Users fetched successfully:', result);
-        res.status(200).json(result); // Send users with role 'member'
+        res.status(200).json(result); // Send users with role 'technician'
     });
 };
 
