@@ -166,9 +166,10 @@ exports.deleteTask = (req, res) => {
     });
   };
   // Update task status by assigned user
+// Updated updateTaskStatus function to include location info
 exports.updateTaskStatus = (req, res) => {
   const { taskId } = req.params; // Task ID from URL
-  const { status } = req.body; // New status from request body
+  const { status, location } = req.body; // Expecting status and location
 
   if (!status) {
     return res.status(400).json({ message: 'Status is required.' });
@@ -176,10 +177,10 @@ exports.updateTaskStatus = (req, res) => {
 
   const query = `
     UPDATE tasks
-    SET status = ?
+    SET status = ?, status_update_location = ?, status_updated_at = NOW()
     WHERE id = ?
   `;
-  const values = [status, taskId];
+  const values = [status, location || null, taskId];
 
   db.query(query, values, (err, result) => {
     if (err) {
