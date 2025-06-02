@@ -193,3 +193,25 @@ exports.updateTaskStatus = (req, res) => {
     res.status(200).json({ message: 'Task status updated successfully' });
   });
 };
+// Update feedback for a task (admin only)
+exports.updateTaskFeedback = (req, res) => {
+  const { taskId } = req.params;
+  const { feedback } = req.body;
+
+  if (!feedback) {
+    return res.status(400).json({ message: 'Feedback cannot be empty.' });
+  }
+
+  const query = `UPDATE tasks SET feedback = ? WHERE id = ?`;
+
+  db.query(query, [feedback, taskId], (err, result) => {
+    if (err) {
+      console.error('Error updating feedback:', err);
+      return res.status(500).json({ message: 'Error updating feedback' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    res.status(200).json({ message: 'Feedback updated successfully' });
+  });
+};

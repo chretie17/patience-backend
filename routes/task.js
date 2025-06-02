@@ -17,6 +17,7 @@ router.put('/:taskId', taskController.updateTask);
 
 // Delete a task by ID
 router.delete('/:taskId', taskController.deleteTask);
+router.put('/:taskId/feedback', taskController.updateTaskFeedback);
 
 
 router.get('/assigned/:userId', taskController.getAssignedTasks);
