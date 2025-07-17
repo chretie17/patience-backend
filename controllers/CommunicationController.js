@@ -4,12 +4,17 @@ const db = require('../db');
 exports.sendMessage = (req, res) => {
     const { sender_id, receiver_id, project_id, message, message_type } = req.body;
     
+    console.log('SendMessage called with:', { sender_id, receiver_id, message, message_type });
+    console.log('Connected users:', Array.from(req.connectedUsers.keys()));
+    
     const query = 'INSERT INTO messages (sender_id, receiver_id, project_id, message, message_type) VALUES (?, ?, ?, ?, ?)';
     db.query(query, [sender_id, receiver_id, project_id, message, message_type || 'direct'], (err, results) => {
         if (err) {
             console.error('Error sending message:', err);
             return res.status(500).json({ error: err.message });
         }
+        
+        console.log('Message inserted with ID:', results.insertId);
         
         // Get sender info for real-time notification
         const senderQuery = 'SELECT username FROM users WHERE id = ?';
@@ -20,12 +25,15 @@ exports.sendMessage = (req, res) => {
             }
             
             const senderName = senderResults[0]?.username || 'Unknown';
+            console.log('Sender name:', senderName);
             
             // Create notification for new message in database
             if (receiver_id) {
                 const notificationQuery = 'INSERT INTO notifications (user_id, title, message, type, related_id, related_type) VALUES (?, ?, ?, ?, ?, ?)';
                 const notificationTitle = `New message from ${senderName}`;
                 const notificationMessage = message.length > 50 ? message.substring(0, 50) + '...' : message;
+                
+                console.log('Creating notification for user:', receiver_id);
                 
                 db.query(notificationQuery, [
                     receiver_id, 
@@ -38,26 +46,49 @@ exports.sendMessage = (req, res) => {
                     if (notifErr) {
                         console.error('Error creating message notification:', notifErr);
                     } else {
-                        console.log('Message notification saved to database');
+                        console.log('Message notification saved to database with ID:', notifResults.insertId);
+                        
+                        // Send real-time notification to receiver via Socket.io
+                        if (req.connectedUsers && req.connectedUsers.has(receiver_id.toString())) {
+                            const receiverSocketId = req.connectedUsers.get(receiver_id.toString());
+                            console.log(`Sending notification to user ${receiver_id} via socket ${receiverSocketId}`);
+                            
+                            // Send the notification event
+                            req.io.to(receiverSocketId).emit('new_notification', {
+                                id: notifResults.insertId,
+                                title: notificationTitle,
+                                message: notificationMessage,
+                                type: 'message',
+                                created_at: new Date().toISOString()
+                            });
+                            
+                            console.log('Notification sent via socket');
+                        } else {
+                            console.log(`User ${receiver_id} not connected. Connected users:`, Array.from(req.connectedUsers.keys()));
+                        }
                     }
                 });
             }
             
-            // Send real-time notification to receiver
-            if (receiver_id && req.connectedUsers.has(receiver_id.toString())) {
+            // Send real-time message to receiver
+            if (receiver_id && req.connectedUsers && req.connectedUsers.has(receiver_id.toString())) {
                 const receiverSocketId = req.connectedUsers.get(receiver_id.toString());
                 console.log(`Sending message to user ${receiver_id} via socket ${receiverSocketId}`);
                 
                 req.io.to(receiverSocketId).emit('new_message', {
                     id: results.insertId,
                     sender_id: parseInt(sender_id),
+                    receiver_id: parseInt(receiver_id),
                     sender_name: senderName,
                     message,
-                    message_type,
+                    message_type: message_type || 'direct',
+                    is_read: false,
                     created_at: new Date().toISOString()
                 });
+                
+                console.log('Message sent via socket');
             } else {
-                console.log(`User ${receiver_id} not connected or not found in connected users`);
+                console.log(`User ${receiver_id} not connected for message. Connected users:`, Array.from(req.connectedUsers.keys()));
             }
             
             res.status(201).json({ message: 'Message sent successfully', messageId: results.insertId });
@@ -65,7 +96,6 @@ exports.sendMessage = (req, res) => {
     });
 };
 
-// Get messages for a user
 exports.getMessages = (req, res) => {
     const { userId } = req.params;
     
@@ -288,5 +318,30 @@ exports.sendNotificationToUser = (req, res) => {
         }
         
         res.status(201).json({ message: 'Notification sent successfully' });
+    });
+};
+
+exports.getUserUnreadCounts = (req, res) => {
+    const { userId } = req.params;
+    
+    const query = `
+        SELECT 
+            sender_id,
+            COUNT(*) as unread_count
+        FROM messages 
+        WHERE receiver_id = ? AND is_read = FALSE 
+        GROUP BY sender_id
+    `;
+    
+    db.query(query, [userId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Convert array to object for easier lookup
+        const unreadCounts = {};
+        results.forEach(row => {
+            unreadCounts[row.sender_id] = row.unread_count;
+        });
+        
+        res.status(200).json(unreadCounts);
     });
 };

@@ -22,5 +22,7 @@ router.put('/mark-notification-read/:notificationId', communicationController.ma
 // Utility routes
 router.get('/unread-count/:userId', communicationController.getUnreadCount);
 router.get('/chat-users', communicationController.getChatUsers);
+router.get('/user-unread-counts/:userId', communicationController.getUserUnreadCounts);
+
 
 module.exports = router;
