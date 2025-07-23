@@ -123,6 +123,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/', clientRoutes);
+app.use('/api/safety', require('./routes/Compliance'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
