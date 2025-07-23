@@ -16,7 +16,7 @@ const reportsRoutes = require('./routes/report');
 const attendanceRoutes = require('./routes/attendance');
 const communicationRoutes = require('./routes/communication');
 const inventoryRoutes = require('./routes/inventory');
-
+const clientRoutes = require('./routes/client');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -122,6 +122,7 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/communication', communicationRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/', clientRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
